@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Air Doodle - Multi-Hand Precision</title>
+  <title>Air Doodle - Precision Drawing</title>
   
   <!-- MediaPipe Hands CDN Links -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -24,7 +24,7 @@
     }
 
     /* Full-screen video and canvas overlays */
-    #webcam, #drawingCanvas, #overlayCanvas {
+    #webcam, #drawingCanvas, #overlayCanvas, #shapeGuideCanvas {
       position: absolute;
       top: 0;
       left: 0;
@@ -38,30 +38,63 @@
       z-index: 1;
     }
 
-    #drawingCanvas {
+    #shapeGuideCanvas {
       z-index: 2;
-    }
-
-    #overlayCanvas {
-      z-index: 3;
       pointer-events: none;
     }
 
-    /* Top Left Credit Text */
+    #drawingCanvas {
+      z-index: 3;
+    }
+
+    #overlayCanvas {
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* Top Left Credit Text Stack */
     .top-left-credit {
       position: absolute;
       top: 20px;
       left: 20px;
       z-index: 10;
       color: #ffffff;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       text-shadow: 0 2px 4px rgba(0,0,0,0.8);
       background: rgba(0, 0, 0, 0.5);
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
       backdrop-filter: blur(6px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Bottom Left QR Code Image Overlay */
+    .bottom-left-qr {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px;
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bottom-left-qr img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
     }
 
     /* Top Center Title Text */
@@ -82,6 +115,112 @@
       text-transform: uppercase;
       letter-spacing: 1.5px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Left Floating Shapes Icon Button */
+    .shape-menu-icon {
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 54px;
+      height: 54px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s ease;
+    }
+
+    .shape-menu-icon:hover {
+      transform: translateY(-50%) scale(1.1);
+      border-color: #00f5d4;
+      box-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
+    }
+
+    .shape-menu-icon svg {
+      width: 26px;
+      height: 26px;
+      fill: #ffffff;
+    }
+
+    /* Shape Selector Popup Modal */
+    .shape-modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .shape-modal-card {
+      background: rgba(20, 20, 20, 0.95);
+      border: 2px solid #00f5d4;
+      border-radius: 20px;
+      padding: 25px 35px;
+      text-align: center;
+      color: #ffffff;
+      box-shadow: 0 0 30px rgba(0, 245, 212, 0.3);
+      animation: popIn 0.25s ease-out forwards;
+      min-width: 280px;
+    }
+
+    .shape-modal-card h3 {
+      font-size: 20px;
+      color: #00f5d4;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .shape-modal-card .nav-hint {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 18px;
+    }
+
+    .shape-options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .shape-option-btn {
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .shape-option-btn:hover, .shape-option-btn.focused {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: #00f5d4;
+      transform: scale(1.02);
+    }
+
+    .shape-option-btn.active {
+      background: #00f5d4;
+      color: #000;
+      border-color: #00f5d4;
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
     }
 
     /* Vertical Color Palette on Right Side */
@@ -183,6 +322,26 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
+      display: flex;
+      gap: 16px;
+    }
+
+    #submitBtn {
+      padding: 12px 28px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      background-color: #00f5d4;
+      color: #000;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(0, 245, 212, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    #submitBtn:hover {
+      background-color: #00d2b5;
+      transform: scale(1.05);
     }
 
     #clearBtn {
@@ -202,18 +361,108 @@
       background-color: #d62828;
       transform: scale(1.05);
     }
+
+    /* Result Modal Popup Styling */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-card {
+      background: rgba(20, 20, 20, 0.95);
+      border: 2px solid #00f5d4;
+      border-radius: 20px;
+      padding: 30px 40px;
+      text-align: center;
+      color: #ffffff;
+      box-shadow: 0 0 30px rgba(0, 245, 212, 0.4);
+      animation: popIn 0.3s ease-out forwards;
+      max-width: 400px;
+    }
+
+    .modal-card h2 {
+      font-size: 32px;
+      color: #00f5d4;
+      margin-bottom: 12px;
+    }
+
+    .modal-card p {
+      font-size: 17px;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .modal-card button {
+      padding: 10px 25px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #00f5d4;
+      border: none;
+      border-radius: 20px;
+      color: #000;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .modal-card button:hover {
+      transform: scale(1.08);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Left Info -->
-  <div class="top-left-credit">Made By Shabd Singh - 9th D</div>
+  <!-- Top Left Info (Updated Credits) -->
+  <div class="top-left-credit">
+    <div>Made By Shabd Singh - 9th D</div>
+    <div>Made by Anmol Kumar - 9TH D</div>
+  </div>
+
+  <!-- Bottom Left QR Code Image Overlay -->
+  <div class="bottom-left-qr">
+    <img src="QR.png" alt="QR Code">
+  </div>
 
   <!-- Top Center Instruction -->
   <div class="top-center-title">Pinch to Doodle</div>
 
+  <!-- Shapes Floating Icon Button (Left Side) -->
+  <div class="shape-menu-icon" id="openShapeModalBtn" title="Select Shape (Press S)">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13H5.5L12 6.5zM4 4h4v4H4V4zm12 0h4v4h-4V4z"/>
+    </svg>
+  </div>
+
+  <!-- Shape Selector Modal Popup -->
+  <div class="shape-modal-overlay" id="shapeModal">
+    <div class="shape-modal-card">
+      <h3>Select Guide Canvas</h3>
+      <div class="nav-hint">Use ↑ / ↓ Arrow Keys & Enter to Select</div>
+      <div class="shape-options-grid">
+        <button class="shape-option-btn active" data-shape="freestyle">Freestyle</button>
+        <button class="shape-option-btn" data-shape="square">Square</button>
+        <button class="shape-option-btn" data-shape="triangle">Triangle</button>
+        <button class="shape-option-btn" data-shape="rectangle">Rectangle</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Webcam & Layered Canvases -->
   <video id="webcam" playsinline></video>
+  <canvas id="shapeGuideCanvas"></canvas>
   <canvas id="drawingCanvas"></canvas>
   <canvas id="overlayCanvas"></canvas>
 
@@ -239,9 +488,19 @@
     </div>
   </div>
 
-  <!-- Bottom Center Control -->
+  <!-- Bottom Center Controls -->
   <div class="bottom-center-controls">
-    <button id="clearBtn">Clear Canvas</button>
+    <button id="submitBtn">Submit Shape (Z)</button>
+    <button id="clearBtn">Clear Canvas (M)</button>
+  </div>
+
+  <!-- Result Modal Popup -->
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-card">
+      <h2 id="modalTitle">🎉 YOU WON! 🎉</h2>
+      <p id="accuracyText">You drew the shape with over 50% accuracy!</p>
+      <button id="closeModalBtn">Continue</button>
+    </div>
   </div>
 
   <script>
@@ -250,20 +509,136 @@
     const drawCtx = drawCanvas.getContext('2d');
     const overlayCanvas = document.getElementById('overlayCanvas');
     const overlayCtx = overlayCanvas.getContext('2d');
+    const shapeCanvas = document.getElementById('shapeGuideCanvas');
+    const shapeCtx = shapeCanvas.getContext('2d');
+    
+    const submitBtn = document.getElementById('submitBtn');
     const clearBtn = document.getElementById('clearBtn');
     const swatches = document.querySelectorAll('.color-swatch');
     const customPicker = document.getElementById('customPicker');
     const brushSizeInput = document.getElementById('brushSize');
 
-    // Preset color map for simultaneous hand separation
-    const defaultHandColors = ['#00f5d4', '#ff007f', '#ffbe0b', '#3a86ff', '#8338ec', '#ffffff'];
+    const openShapeModalBtn = document.getElementById('openShapeModalBtn');
+    const shapeModal = document.getElementById('shapeModal');
+    const shapeOptionBtns = Array.from(document.querySelectorAll('.shape-option-btn'));
+
+    const resultModal = document.getElementById('resultModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const accuracyText = document.getElementById('accuracyText');
+
+    // Shape State Variables
+    let currentShape = 'freestyle';
+    let targetPathPixels = [];
+    let targetMaskCanvas = null;
+    let selectedMenuIndex = 0;
 
     // Global Primary Brush Settings
     let strokeColor = '#00f5d4';
     let strokeWidth = 6;
 
-    // Multi-hand state tracking object
-    const handStates = {};
+    // Single hand state tracking object
+    const handState = {
+      isDrawing: false,
+      currX: 0,
+      currY: 0,
+      lastX: 0,
+      lastY: 0
+    };
+
+    // Open Shape Modal
+    function openShapeModal() {
+      shapeModal.style.display = 'flex';
+      const activeIdx = shapeOptionBtns.findIndex(b => b.getAttribute('data-shape') === currentShape);
+      selectedMenuIndex = activeIdx !== -1 ? activeIdx : 0;
+      updateMenuFocus();
+    }
+
+    // Close Shape Modal
+    function closeShapeModal() {
+      shapeModal.style.display = 'none';
+    }
+
+    openShapeModalBtn.addEventListener('click', openShapeModal);
+
+    shapeModal.addEventListener('click', (e) => {
+      if (e.target === shapeModal) {
+        closeShapeModal();
+      }
+    });
+
+    // Update Focused Visual state for Keyboard Navigation
+    function updateMenuFocus() {
+      shapeOptionBtns.forEach((btn, index) => {
+        if (index === selectedMenuIndex) {
+          btn.classList.add('focused');
+        } else {
+          btn.classList.remove('focused');
+        }
+      });
+    }
+
+    // Apply Selected Shape Logic
+    function applyShapeSelection(index) {
+      shapeOptionBtns.forEach(b => b.classList.remove('active'));
+      const chosenBtn = shapeOptionBtns[index];
+      chosenBtn.classList.add('active');
+      currentShape = chosenBtn.getAttribute('data-shape');
+
+      // Clear existing canvas drawing when changing shapes
+      clearAllCanvases();
+
+      // Render the new selected shape template guide
+      drawShapeGuide();
+
+      // Close popup modal
+      closeShapeModal();
+    }
+
+    // Shape Selection Click Event Handlers
+    shapeOptionBtns.forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        selectedMenuIndex = idx;
+        applyShapeSelection(idx);
+      });
+    });
+
+    // Keyboard Shortcuts (M, Z, S, Up, Down, Enter, Escape)
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+
+      // Check if shape modal is currently open
+      const isModalOpen = shapeModal.style.display === 'flex';
+
+      if (isModalOpen) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedMenuIndex = (selectedMenuIndex + 1) % shapeOptionBtns.length;
+          updateMenuFocus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedMenuIndex = (selectedMenuIndex - 1 + shapeOptionBtns.length) % shapeOptionBtns.length;
+          updateMenuFocus();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          applyShapeSelection(selectedMenuIndex);
+        } else if (e.key === 'Escape') {
+          closeShapeModal();
+        }
+        return;
+      }
+
+      // Global Shortcuts
+      if (key === 'm') {
+        clearAllCanvases();
+      } else if (key === 'z') {
+        submitBtn.click();
+      } else if (key === 's') {
+        openShapeModal();
+      } else if (e.key === 'Escape') {
+        resultModal.style.display = 'none';
+      }
+    });
 
     // Color Selection logic
     swatches.forEach(swatch => {
@@ -285,26 +660,170 @@
       strokeWidth = parseInt(e.target.value, 10);
     });
 
+    closeModalBtn.addEventListener('click', () => {
+      resultModal.style.display = 'none';
+    });
+
+    function clearAllCanvases() {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+
     // Resize canvas layers to match window dimensions
     function resizeCanvas() {
       drawCanvas.width = window.innerWidth;
       drawCanvas.height = window.innerHeight;
       overlayCanvas.width = window.innerWidth;
       overlayCanvas.height = window.innerHeight;
+      shapeCanvas.width = window.innerWidth;
+      shapeCanvas.height = window.innerHeight;
+      drawShapeGuide();
     }
     window.addEventListener('resize', resizeCanvas);
+
+    // Render Center Lined Shape Guides and Precompute Target Mask
+    function drawShapeGuide() {
+      shapeCtx.clearRect(0, 0, shapeCanvas.width, shapeCanvas.height);
+      targetPathPixels = [];
+
+      if (currentShape === 'freestyle') return;
+
+      const cX = shapeCanvas.width / 2;
+      const cY = shapeCanvas.height / 2;
+
+      shapeCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      shapeCtx.lineWidth = 10;
+      shapeCtx.setLineDash([12, 12]);
+
+      const path = new Path2D();
+
+      if (currentShape === 'square') {
+        const size = 220;
+        path.rect(cX - size / 2, cY - size / 2, size, size);
+      } else if (currentShape === 'triangle') {
+        const size = 260;
+        const h = size * (Math.sqrt(3) / 2);
+        path.moveTo(cX, cY - h / 2);
+        path.lineTo(cX - size / 2, cY + h / 2);
+        path.lineTo(cX + size / 2, cY + h / 2);
+        path.closePath();
+      } else if (currentShape === 'rectangle') {
+        const w = 320;
+        const h = 180;
+        path.rect(cX - w / 2, cY - h / 2, w, h);
+      }
+
+      shapeCtx.stroke(path);
+      shapeCtx.setLineDash([]);
+
+      // Offscreen canvas for generating accuracy evaluation mask
+      targetMaskCanvas = document.createElement('canvas');
+      targetMaskCanvas.width = shapeCanvas.width;
+      targetMaskCanvas.height = shapeCanvas.height;
+      const maskCtx = targetMaskCanvas.getContext('2d');
+      maskCtx.lineWidth = 24; // Generous target tolerance zone
+      maskCtx.strokeStyle = '#ffffff';
+      maskCtx.stroke(path);
+
+      const imgData = maskCtx.getImageData(0, 0, targetMaskCanvas.width, targetMaskCanvas.height).data;
+      const step = 6;
+      for (let y = 0; y < targetMaskCanvas.height; y += step) {
+        for (let x = 0; x < targetMaskCanvas.width; x += step) {
+          const alpha = imgData[(y * targetMaskCanvas.width + x) * 4 + 3];
+          if (alpha > 50) {
+            targetPathPixels.push({ x, y });
+          }
+        }
+      }
+    }
+
     resizeCanvas();
 
-    // Initialize MediaPipe Hands
+    // Accuracy Evaluation Logic
+    submitBtn.addEventListener('click', () => {
+      if (currentShape === 'freestyle') {
+        modalTitle.innerText = "SELECT A SHAPE";
+        modalTitle.style.color = "#ffbe0b";
+        accuracyText.innerText = "Please select a shape (Square, Triangle, or Rectangle) from the shape menu icon on the left before submitting!";
+        resultModal.style.display = 'flex';
+        return;
+      }
+
+      if (targetPathPixels.length === 0 || !targetMaskCanvas) return;
+
+      const drawData = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
+      const maskData = targetMaskCanvas.getContext('2d').getImageData(0, 0, targetMaskCanvas.width, targetMaskCanvas.height).data;
+      
+      let matchedCount = 0;
+      let totalDrawnPoints = 0;
+      let offTargetDrawnPoints = 0;
+
+      const step = 6;
+      for (let y = 0; y < drawCanvas.height; y += step) {
+        for (let x = 0; x < drawCanvas.width; x += step) {
+          const idx = (y * drawCanvas.width + x) * 4;
+          const isDrawn = drawData[idx + 3] > 50;
+          const isTarget = maskData[idx + 3] > 50;
+
+          if (isDrawn) {
+            totalDrawnPoints++;
+            if (!isTarget) {
+              offTargetDrawnPoints++;
+            }
+          }
+        }
+      }
+
+      // Check coverage on target points
+      for (let i = 0; i < targetPathPixels.length; i++) {
+        const p = targetPathPixels[i];
+        const idx = (p.y * drawCanvas.width + p.x) * 4;
+        if (drawData[idx + 3] > 50) {
+          matchedCount++;
+        }
+      }
+
+      if (totalDrawnPoints === 0) {
+        modalTitle.innerText = "NO DRAWING FOUND";
+        modalTitle.style.color = "#ffbe0b";
+        accuracyText.innerText = `Please trace the ${currentShape} on screen before submitting!`;
+        resultModal.style.display = 'flex';
+        return;
+      }
+
+      // Raw coverage percentage
+      const coverageRatio = matchedCount / targetPathPixels.length;
+
+      // Penalty factor for drawing outside template boundary
+      const strayRatio = offTargetDrawnPoints / Math.max(totalDrawnPoints, 1);
+      const penalty = Math.min(strayRatio * 0.5, 0.4);
+
+      // Final score accounting for precision and coverage
+      const finalAccuracy = Math.max(0, Math.round((coverageRatio - penalty) * 100));
+
+      if (finalAccuracy >= 50) {
+        modalTitle.innerText = "🎉 YOU WON! 🎉";
+        modalTitle.style.color = "#00f5d4";
+        accuracyText.innerText = `Awesome! You drew the ${currentShape} with ${finalAccuracy}% precision!`;
+      } else {
+        modalTitle.innerText = "TRY AGAIN!";
+        modalTitle.style.color = "#ff007f";
+        accuracyText.innerText = `Precision Score: ${finalAccuracy}%. Trace directly along the dashed lines to reach 50%!`;
+      }
+
+      resultModal.style.display = 'flex';
+    });
+
+    // Initialize MediaPipe Hands preserving full 21 joint tracking structure
     const hands = new Hands({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
     hands.setOptions({
-      maxNumHands: 4,             // Track up to 4 hands simultaneously
-      modelComplexity: 1,         // Full accurate tracking model
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7
+      maxNumHands: 1,             // SINGLE HAND DETECTION
+      modelComplexity: 1,         // Retains full 21 landmark spatial joint tracking
+      minDetectionConfidence: 0.3, // High lighting sensitivity optimization
+      minTrackingConfidence: 0.3   // Keeps tracking stable in strong lighting
     });
 
     hands.onResults(onResults);
@@ -323,127 +842,100 @@
       // Clear overlay canvas for real-time tracking indicators
       overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-      const activeHandIndices = new Set();
-
+      // Evaluate 21 landmark joint array structure
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        results.multiHandLandmarks.forEach((landmarks, index) => {
-          activeHandIndices.add(index);
+        const landmarks = results.multiHandLandmarks[0];
 
-          // Assign default or custom color per hand
-          const handColor = (index === 0) ? strokeColor : (defaultHandColors[index % defaultHandColors.length]);
+        // Key Hand Landmarks (from 21 landmark structure)
+        const wrist = landmarks[0];
+        const middleMCP = landmarks[9];
+        const thumbTip = landmarks[4];
+        const indexTip = landmarks[8];
 
-          // Initialize hand state if not present
-          if (!handStates[index]) {
-            handStates[index] = {
-              isDrawing: false,
-              currX: 0,
-              currY: 0,
-              lastX: 0,
-              lastY: 0
-            };
-          }
+        // Reference scale for depth invariance (Wrist to Middle Joint distance)
+        const handScale = Math.hypot(
+          middleMCP.x - wrist.x,
+          middleMCP.y - wrist.y,
+          middleMCP.z - wrist.z
+        );
 
-          const state = handStates[index];
+        // Direct 3D distance between Index Tip and Thumb Tip
+        const rawPinchDistance = Math.hypot(
+          thumbTip.x - indexTip.x,
+          thumbTip.y - indexTip.y,
+          thumbTip.z - indexTip.z
+        );
 
-          // Key Hand Landmarks
-          const wrist = landmarks[0];
-          const middleMCP = landmarks[9];
-          const thumbTip = landmarks[4];
-          const indexTip = landmarks[8];
+        // Scaled ratio
+        const pinchRatio = rawPinchDistance / (handScale || 1);
 
-          // Reference scale for depth invariance (Wrist to Middle Joint distance)
-          const handScale = Math.hypot(
-            middleMCP.x - wrist.x,
-            middleMCP.y - wrist.y,
-            middleMCP.z - wrist.z
-          );
+        // Hysteresis thresholding
+        const PINCH_START = 0.55;
+        const PINCH_END = 0.65;
 
-          // Direct 3D distance between Index Tip and Thumb Tip
-          const rawPinchDistance = Math.hypot(
-            thumbTip.x - indexTip.x,
-            thumbTip.y - indexTip.y,
-            thumbTip.z - indexTip.z
-          );
+        const isPinchingNow = handState.isDrawing ? (pinchRatio < PINCH_END) : (pinchRatio < PINCH_START);
 
-          // Scaled ratio
-          const pinchRatio = rawPinchDistance / (handScale || 1);
+        // Pinch Midpoint Coordinates
+        const rawX = ((thumbTip.x + indexTip.x) / 2) * drawCanvas.width;
+        const rawY = ((thumbTip.y + indexTip.y) / 2) * drawCanvas.height;
 
-          // Hysteresis thresholding
-          const PINCH_START = 0.35;
-          const PINCH_END = 0.48;
-
-          const isPinchingNow = state.isDrawing ? (pinchRatio < PINCH_END) : (pinchRatio < PINCH_START);
-
-          // Pinch Midpoint Coordinates
-          const rawX = ((thumbTip.x + indexTip.x) / 2) * drawCanvas.width;
-          const rawY = ((thumbTip.y + indexTip.y) / 2) * drawCanvas.height;
-
-          // Low-pass Exponential Moving Average (EMA) position smoothing filter
-          const alpha = 0.35; // Smoothing factor
-          if (!state.isDrawing && !isPinchingNow) {
-            state.currX = rawX;
-            state.currY = rawY;
-          } else {
-            state.currX = state.currX + alpha * (rawX - state.currX);
-            state.currY = state.currY + alpha * (rawY - state.currY);
-          }
-
-          // Render Tracking Indicators on Overlay Layer
-          overlayCtx.beginPath();
-          overlayCtx.arc(state.currX, state.currY, isPinchingNow ? strokeWidth * 0.8 : 8, 0, 2 * Math.PI);
-          overlayCtx.fillStyle = isPinchingNow ? handColor : 'rgba(255, 255, 255, 0.8)';
-          overlayCtx.strokeStyle = '#000';
-          overlayCtx.lineWidth = 2;
-          overlayCtx.fill();
-          overlayCtx.stroke();
-
-          // Perform Drawing Operations
-          if (isPinchingNow) {
-            if (!state.isDrawing) {
-              state.isDrawing = true;
-              state.lastX = state.currX;
-              state.lastY = state.currY;
-            } else {
-              drawCtx.beginPath();
-              drawCtx.moveTo(state.lastX, state.lastY);
-              drawCtx.lineTo(state.currX, state.currY);
-              drawCtx.strokeStyle = handColor;
-              drawCtx.lineWidth = strokeWidth;
-              drawCtx.lineCap = 'round';
-              drawCtx.lineJoin = 'round';
-
-              // Neon Glow FX
-              drawCtx.shadowColor = handColor;
-              drawCtx.shadowBlur = strokeWidth * 1.2;
-
-              drawCtx.stroke();
-
-              // Reset shadow context for efficiency
-              drawCtx.shadowBlur = 0;
-
-              state.lastX = state.currX;
-              state.lastY = state.currY;
-            }
-          } else {
-            state.isDrawing = false;
-          }
-        });
-      }
-
-      // Cleanup inactive hand states
-      Object.keys(handStates).forEach((indexKey) => {
-        const index = parseInt(indexKey, 10);
-        if (!activeHandIndices.has(index)) {
-          handStates[index].isDrawing = false;
+        // Exponential Moving Average (EMA) position smoothing filter
+        const alpha = 0.55;
+        if (!handState.isDrawing && !isPinchingNow) {
+          handState.currX = rawX;
+          handState.currY = rawY;
+        } else {
+          handState.currX = handState.currX + alpha * (rawX - handState.currX);
+          handState.currY = handState.currY + alpha * (rawY - handState.currY);
         }
-      });
+
+        // Render Single Tracking Indicator on Overlay Layer
+        overlayCtx.beginPath();
+        overlayCtx.arc(handState.currX, handState.currY, isPinchingNow ? strokeWidth * 0.8 : 8, 0, 2 * Math.PI);
+        overlayCtx.fillStyle = isPinchingNow ? strokeColor : 'rgba(255, 255, 255, 0.8)';
+        overlayCtx.strokeStyle = '#000';
+        overlayCtx.lineWidth = 2;
+        overlayCtx.fill();
+        overlayCtx.stroke();
+
+        // Perform Single-Hand Drawing Operations
+        if (isPinchingNow) {
+          if (!handState.isDrawing) {
+            handState.isDrawing = true;
+            handState.lastX = handState.currX;
+            handState.lastY = handState.currY;
+          } else {
+            drawCtx.beginPath();
+            drawCtx.moveTo(handState.lastX, handState.lastY);
+            drawCtx.lineTo(handState.currX, handState.currY);
+            drawCtx.strokeStyle = strokeColor;
+            drawCtx.lineWidth = strokeWidth;
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+
+            // Neon Glow FX
+            drawCtx.shadowColor = strokeColor;
+            drawCtx.shadowBlur = strokeWidth * 1.2;
+
+            drawCtx.stroke();
+
+            // Reset shadow context for efficiency
+            drawCtx.shadowBlur = 0;
+
+            handState.lastX = handState.currX;
+            handState.lastY = handState.currY;
+          }
+        } else {
+          handState.isDrawing = false;
+        }
+      } else {
+        // Reset state if no hands are visible
+        handState.isDrawing = false;
+      }
     }
 
-    // Clear Canvas
-    clearBtn.addEventListener('click', () => {
-      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-    });
+    // Clear Canvas Manual Trigger
+    clearBtn.addEventListener('click', clearAllCanvases);
   </script>
 </body>
 </html>
